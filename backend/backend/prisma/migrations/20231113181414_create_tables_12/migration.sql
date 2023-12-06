@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "partidas" ALTER COLUMN "data_part" DROP NOT NULL,
+ALTER COLUMN "data_part" SET DATA TYPE VARCHAR(15),
+ALTER COLUMN "horario_part" DROP NOT NULL,
+ALTER COLUMN "horario_part" SET DATA TYPE VARCHAR(15),
+ALTER COLUMN "local_part" DROP NOT NULL;

@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Comando para criar migration
+// yarn prisma migrate dev
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id_user String @id @default(uuid())
+  nome_user String @db.VarChar(30)
+  sobrenome_user String @db.VarChar(70)
+  email_user String @db.VarChar(100)
+  senha_user String @db.VarChar(200)
+  imagem_user String? @db.VarChar(200)
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("users")
+  competicoes Competicao[]
+  times Time[]
+  grupos Grupo[]
+
+}
+
+model Competicao {
+  id_comp String @id @default(uuid())
+  nome_comp String? @db.VarChar(50)
+  descricao_comp String? @db.Text
+  premiacao_comp String? @db.Text
+  data_ini_comp String? @db.VarChar(15)
+  data_termi_comp String? @db.VarChar(15)
+  situacao_comp Boolean
+  quantidade_times_comp Int?
+  timeVencedor String? @db.VarChar(100)
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("competicoes")
+  fk_usuario String
+  usuario User @relation(fields: [fk_usuario], references: [id_user])
+
+  times Time[]
+  partidas Partida[]
+  grupos Grupo[]
+}
+
+model Time {
+  id_time String @id @default(uuid())
+  nome_time String @db.VarChar(20)
+  imagem_time String? @db.VarChar(300)
+  abreviacao_time String @db.VarChar(5)
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("times")
+
+  fk_usuario String
+  fk_competicao String?
+  usuario User @relation(fields: [fk_usuario], references: [id_user])
+  competicoes Competicao? @relation(fields: [fk_competicao], references: [id_comp])
+
+  grupos Grupo[]
+  jogadores Jogador[]
+  estatisticas Estatistica[]
+  partidas1 Partida[] @relation("partida_time1")
+  partidas2 Partida[] @relation("partida_time2")
+}
+
+model Jogador {
+  id_jogador String @id @default(uuid())
+  nome_jogador String @db.VarChar(300)
+  numero_jogador Int
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("jogadores")
+  
+  fk_time String?
+  time Time? @relation(fields: [fk_time], references: [id_time])
+  pontuacoes MomentoDaPontuacao[]
+}
+
+model MomentoDaPontuacao {
+  id_momento_da_pontuacao String @id @default(uuid())
+  tempo_partida String @db.VarChar(100)
+
+  @@map("pontuacoes")
+
+  fk_part String?
+  partidas Partida? @relation(fields: [fk_part], references: [id_part])
+  fk_jogador String?
+  jogadores Jogador? @relation(fields: [fk_jogador], references: [id_jogador])
+}
+
+model Partida {
+  id_part String @id @default(uuid())
+  data_part String? @db.VarChar(15)
+  horario_part String? @db.VarChar(15)
+  local_part String? @db.VarChar(50)
+  placar_time1 String? @db.Char(5)
+  placar_time2 String? @db.Char(5)
+
+  nome_time1 String? @db.VarChar(20)
+  imagem_time1 String? @db.VarChar(300)
+  nome_time2 String? @db.VarChar(20)
+  imagem_time2 String? @db.VarChar(300)
+
+  winner String? @db.VarChar(300)
+  status Boolean?
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("partidas")
+
+  fk_comp String
+  fk_time1 String
+  fk_time2 String
+  fk_momento_da_pontuacao String?
+  competicoes Competicao @relation(fields: [fk_comp], references: [id_comp])
+  time1 Time @relation(fields: [fk_time1], references: [id_time], name: "partida_time1")
+  time2 Time @relation(fields: [fk_time2], references: [id_time], name: "partida_time2")
+
+  estatisticas Estatistica[]
+  pontuacoes MomentoDaPontuacao[]
+}
+
+model Estatistica {
+  id_estatistica String @id @default(uuid())
+  cartao String @db.VarChar(30)
+  chutes String @db.VarChar(30)
+  escanteios String @db.VarChar(30)
+  posse_bola String @db.VarChar(30)
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("estatisticas")
+
+  fk_partida String?
+  partida Partida? @relation(fields: [fk_partida], references: [id_part])
+  fk_time String?
+  time Time? @relation(fields: [fk_time], references: [id_time])
+}
+
+model Grupo {
+  id_grupo String @id @default(uuid())
+  nome_grupo String @db.VarChar(100)
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("grupos")
+
+  fk_time String?
+  time Time? @relation(fields: [fk_time], references: [id_time])
+  fk_competicao String?
+  competicoes Competicao? @relation(fields: [fk_competicao], references: [id_comp])
+  fk_usuario String
+  usuario User @relation(fields: [fk_usuario], references: [id_user])
+}
